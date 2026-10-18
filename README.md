@@ -8,6 +8,7 @@
 
 
 <img src="https://raw.githubusercontent.com/FatalS3C/gitsint/refs/heads/main/ascii-magic-1.gif">
+
 **GitSint** It's an OSINT tool for GitHub, written in Python 3.
 
 It provides four analysis modes, ranging from quick profile lookups to comprehensive profile scans covering repositories and their commits. It also supports inspecting individual repositories and commits for additional information, including details that may not be immediately visible in standard GitHub pages.
@@ -128,7 +129,7 @@ The user is responsible for how the tool is used.
 **USER**
 
 - Telegram: [@fatalsec](https://t.me/fatalsec)
-- GitHub: [@USER](https://github.com/FatalS3C)
+- GitHub: [@Fatalsec](https://github.com/FatalS3C)
 
 ---
 
