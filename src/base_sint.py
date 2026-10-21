@@ -1,10 +1,5 @@
 import sys
 import os
-caminho_projeto = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-caminho_vendor = os.path.join(caminho_projeto, 'vendor')
-if caminho_vendor not in sys.path:
-	sys.path.insert(0, caminho_vendor)
-
 import requests
 import json
 import re
@@ -12,6 +7,10 @@ from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 from datetime import datetime, timezone
 from bs4 import BeautifulSoup as sp
+caminho_projeto = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+caminho_vendor = os.path.join(caminho_projeto, 'vendor')
+if caminho_vendor not in sys.path:
+	sys.path.insert(0, caminho_vendor)
 
 
 #EXCEPTS
@@ -90,17 +89,31 @@ def captura_commits(link):
 
 def checa_commit(commit):
 	r = requests.get(commit+'.patch')
-	commit = {}
+	commitz = {}
 	for a in r.text.splitlines():
-		if 'Subject: [PATCH]' in a:
-			commit.update({'subject':a.split('] ')[1]})
-		if 'From: ' in a:
-			if 'users.noreply.github.com' in a:
+		if a.strip().startswith('Subject: [PATCH]'):
+			try:
+				commitz.update({'subject': a.split('] ', 1)[1]})
+			except IndexError:
+				pass
+		elif a.strip().startswith('From:'):
+			if '://github.com' in a:
 				break
-			commit.update({'email':a.split(': ')[1].split(' <')[1].split('>')[0]})
-			commit.update({'name':a.split(': ')[1].split(' <')[0]})
-		if 'Date: ' in a:
-			data = (a.split(': ')[1])
-			dato = limpa_data(data)
-			commit.update({'date':str(dato)})
-	return commit
+			email_match = re.search(r'<(.*?)>', a)
+			nome_match = re.search(r'From:\s*(.*?)\s*<', a)
+			if email_match and nome_match:
+				if 'noreply.github.com' in email_match.group(1).strip():
+					pass
+				else:
+					commitz.update({'email': email_match.group(1).strip(), 'name': nome_match.group(1).strip()})
+			else:
+				nome_simples = a.replace('From:', '').strip()
+				commitz.update({'name': nome_simples, 'email': 'Unknown'})
+		elif a.strip().startswith('Date:'):
+			try:
+				data_bruta = a.split('Date:', 1)[1].strip()
+				dato = limpa_data(data_bruta)
+				commitz.update({'date': str(dato)})
+			except Exception:
+				pass
+	return commitz

@@ -84,27 +84,18 @@ def alerta(tipo, mensagem):
 	print(f'{texto.negrito}{texto.cor.branco}╰{"─" * (largura_conteudo + 2)}╯{texto.reseta}')
 
 def caixa_sint(link_titulo, bloco_texto):
-    linhas = [l.strip() for l in bloco_texto.strip().split('\n') if l.strip()]
-    
-    # Conta o tamanho ignorando os códigos ANSI (\033...), mas mantém a cor intacta
-    comprimento = lambda t: len(re.sub(r'\033\[[0-9;]*m', '', t))
-    
-    maior_linha = max(comprimento(l) for l in linhas)
-    largura_conteudo = max(maior_linha, comprimento(link_titulo) + 6)
-    
-    # 1. Topo (Exibe o link com a cor original)
-    espaco_tracos = largura_conteudo - comprimento(link_titulo)
-    metade_esq = espaco_tracos // 2
-    metade_dir = espaco_tracos - metade_esq
-    print(f"┌{'─' * (metade_esq - 1)} {texto.cor.vermelho_claro}{link_titulo}{texto.cor.branco} {'─' * (metade_dir+1)}┐")
-    
-    # 2. Miolo (Exibe suas linhas com as cores originais do seu print)
-    for linha in linhas:
-        espacos_vazios = largura_conteudo - comprimento(linha)
-        print(f"│ {linha}{' ' * espacos_vazios} │")
-        
-    # 3. Base
-    print(f"└{'─' * (largura_conteudo + 2)}┘")
+	linhas = [l.strip() for l in bloco_texto.strip().split('\n') if l.strip()]
+	comprimento = lambda t: len(re.sub(r'\033\[[0-9;]*m', '', t))
+	maior_linha = max(comprimento(l) for l in linhas)
+	largura_conteudo = max(maior_linha, comprimento(link_titulo) + 6)
+	espaco_tracos = largura_conteudo - comprimento(link_titulo)
+	metade_esq = espaco_tracos // 2
+	metade_dir = espaco_tracos - metade_esq
+	print(f"┌{'─' * (metade_esq - 1)} {texto.cor.vermelho_claro}{link_titulo}{texto.cor.branco} {'─' * (metade_dir+1)}┐")
+	for linha in linhas:
+		espacos_vazios = largura_conteudo - comprimento(linha)
+		print(f"│ {linha}{' ' * espacos_vazios} │")
+	print(f"└{'─' * (largura_conteudo + 2)}┘")
 	
 def logo():
 	print (f"""                          
@@ -147,8 +138,11 @@ if args.repo:
 		bruto = []
 		commit = (commites[i])
 		cm = checa_commit(commit)
-		for chave in cm.keys():
-			bruto.append(f'{texto.negrito}{texto.cor.branco}{chave.upper()} > {texto.cor.azul_claro}{cm[chave]}{texto.reseta}')
+		if not cm:
+			bruto.append(f'{texto.negrito}{texto.cor.vermelho_claro}NOTICE > {texto.cor.branco}Commit [{commit}] data is unavailable or unreadable.{texto.reseta}')
+		else:
+			for chave in cm.keys():
+				bruto.append(f'{texto.negrito}{texto.cor.branco}{chave.upper()} > {texto.cor.azul_claro}{cm[chave]}{texto.reseta}')
 		caixa_sint(f'Commit [{i+1}/{total}]', '\n'.join(bruto))
 	
 if args.commit:
@@ -221,7 +215,6 @@ if args.get:
 	alerta('info', 'The process may take some time, please wait!')
 	for commit in commits:
 		comite = checa_commit(commit)
-		print (comite)
 		try:
 			emails.add(comite['email'])
 			alerta('sucesso', f"Email found! {comite['email']}")
@@ -232,6 +225,19 @@ if args.get:
 			alerta('sucesso', f"Name found! {comite['name']}")
 		except:
 			None
+	
+	
+	#RENOVA
+	clear()
+	logo()
+	for chave in perfil.keys():
+		bruto.append(f'{texto.negrito}{texto.cor.branco}{chave.upper()} > {texto.cor.azul_claro}{perfil[chave]}{texto.reseta}')
+	bruto.append(f'{texto.negrito}{texto.cor.branco}REPOSITORIES > {texto.cor.azul_claro}{len(repos)}{texto.reseta}')
+	caixa_sint(alvo, '\n'.join(bruto))
+	bruto = []
+	for repo in repos:
+		bruto.append(f'{texto.negrito}{texto.cor.branco}REPO > {texto.cor.azul_claro}{repo}{texto.reseta}')
+	caixa_sint('REPOS', '\n'.join(bruto))
 	bruto = []
 	for email in emails:
 		bruto.append(f'{texto.negrito}{texto.cor.branco}Email > {texto.cor.azul_claro}{email}{texto.reseta}')
